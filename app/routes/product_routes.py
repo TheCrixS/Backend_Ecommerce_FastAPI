@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.config.security import get_current_admin
@@ -58,3 +58,20 @@ def delete_product(
     _: User = Depends(get_current_admin)
 ):
     return product_controller.delete_product(db=db, product_id=product_id)
+
+@router.post("/{product_id}/image", response_model=ProductResponse)
+async def upload_product_image(
+    product_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin)
+):
+    return await product_controller.upload_product_image(db=db, product_id=product_id, file=file)
+
+@router.delete("/{product_id}/image", response_model=ProductResponse)
+def delete_product_image(
+    product_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_admin)
+):
+    return product_controller.remove_product_image(db=db, product_id=product_id)

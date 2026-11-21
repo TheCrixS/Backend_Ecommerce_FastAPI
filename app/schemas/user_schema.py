@@ -8,7 +8,7 @@ class UserBase(BaseModel):
     shipping_address: Optional[str] = Field(default=None, max_length=255)
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=6, max_length=72)
+    password: str = Field(..., min_length=8, max_length=72)
 
 class UserLogin(BaseModel):
     email: EmailStr

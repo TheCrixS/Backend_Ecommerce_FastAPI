@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, Integer, Numeric, ForeignKey, Enum, DateTime
+from sqlalchemy import Column, Integer, Numeric, ForeignKey, Enum, DateTime, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.config.database import Base
@@ -8,6 +8,7 @@ class OrderStatus(str, enum.Enum):
     PENDING = "pending"
     PAID = "paid"
     SHIPPED = "shipped"
+    DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
 class Order(Base):
@@ -18,6 +19,12 @@ class Order(Base):
     total_amount = Column(Numeric(10, 2), nullable=False, default=0.00)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    shipping_address = Column(String(255), nullable=True)
+
+    # Datos del pago simulado (no se procesa dinero real)
+    payment_method = Column(String(30), nullable=True)
+    payment_reference = Column(String(40), nullable=True)
+    paid_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")

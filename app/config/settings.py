@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str
 
+    # Imágenes de producto (montado como volumen de Docker para que persistan)
+    UPLOAD_DIR: str = "/app/uploads"
+    MAX_IMAGE_SIZE_MB: int = 5
+
     # Busca .env en el directorio actual o en la raíz si corres uvicorn desde backend/
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
