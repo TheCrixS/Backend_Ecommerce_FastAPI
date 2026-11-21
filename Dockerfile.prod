@@ -1,5 +1,5 @@
 # Imagen de producción: sin --reload, sin root y con el código copiado dentro.
-# python:3.11-slim y psycopg2-binary tienen versión arm64 (Oracle Ampere A1).
+# Funciona en x86 (Google Cloud e2-micro) y en ARM.
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
