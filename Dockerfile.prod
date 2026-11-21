@@ -1,0 +1,25 @@
+# Imagen de producción: sin --reload, sin root y con el código copiado dentro.
+# python:3.11-slim y psycopg2-binary tienen versión arm64 (Oracle Ampere A1).
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./app ./app
+
+# Usuario sin privilegios; la carpeta de portadas se monta como volumen
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /app/uploads \
+    && chown -R appuser:appuser /app/uploads
+USER appuser
+
+EXPOSE 8000
+
+# Un solo worker: el límite de intentos de login vive en memoria del proceso.
+# --proxy-headers toma la IP real del cliente que envía Caddy (solo alcanzable por la red interna).
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]

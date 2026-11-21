@@ -14,7 +14,10 @@ run_migrations(engine)
 app = FastAPI(
     title="API Tienda de Mangas, Cómics y Manhwas",
     description="Backend MVC con FastAPI y PostgreSQL",
-    version="1.1.0"
+    version="1.1.0",
+    docs_url="/docs" if settings.ENABLE_DOCS else None,
+    redoc_url="/redoc" if settings.ENABLE_DOCS else None,
+    openapi_url="/openapi.json" if settings.ENABLE_DOCS else None,
 )
 
 # Se registra antes que CORS para quedar por dentro: así el 413 también lleva cabeceras CORS

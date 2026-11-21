@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "/app/uploads"
     MAX_IMAGE_SIZE_MB: int = 5
 
+    # En producción se apagan /docs y /redoc para no publicar el mapa de la API
+    ENABLE_DOCS: bool = True
+
     # Busca .env en el directorio actual o en la raíz si corres uvicorn desde backend/
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
