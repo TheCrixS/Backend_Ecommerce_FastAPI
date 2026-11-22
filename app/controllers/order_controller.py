@@ -39,6 +39,25 @@ def expire_stale_orders(db: Session) -> None:
     if stale_orders:
         db.commit()
 
+def _shipping_details(order_data: OrderCreate, user: User) -> dict:
+    """Datos de envío del pedido: los que escribió el cliente o, si no envió una
+    dirección, los de su perfil. No se mezclan para no armar direcciones inválidas."""
+    if order_data.shipping_address:
+        return {
+            "recipient_name": order_data.recipient_name or user.full_name,
+            "recipient_phone": order_data.recipient_phone or user.phone,
+            "shipping_address": order_data.shipping_address,
+            "shipping_city": order_data.shipping_city,
+            "shipping_department": order_data.shipping_department,
+        }
+    return {
+        "recipient_name": user.full_name,
+        "recipient_phone": user.phone,
+        "shipping_address": user.shipping_address,
+        "shipping_city": user.city,
+        "shipping_department": user.department,
+    }
+
 def create_order(db: Session, user: User, order_data: OrderCreate) -> Order:
     expire_stale_orders(db)
 
@@ -94,7 +113,7 @@ def create_order(db: Session, user: User, order_data: OrderCreate) -> Order:
         user_id=user.id,
         total_amount=total_amount,
         status=OrderStatus.PENDING,
-        shipping_address=(order_data.shipping_address or "").strip() or user.shipping_address,
+        **_shipping_details(order_data, user),
         items=order_items_to_create
     )
 

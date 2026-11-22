@@ -8,6 +8,16 @@ ORDER_COLUMNS = [
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(30)",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(40)",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP WITH TIME ZONE",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_name VARCHAR(100)",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS recipient_phone VARCHAR(20)",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_city VARCHAR(80)",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_department VARCHAR(80)",
+]
+
+USER_COLUMNS = [
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS city VARCHAR(80)",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(80)",
 ]
 
 
@@ -15,5 +25,5 @@ def run_migrations(engine: Engine) -> None:
     # ALTER TYPE ... ADD VALUE no puede usarse dentro de la misma transacción que lo consulta
     with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
         conn.execute(text("ALTER TYPE orderstatus ADD VALUE IF NOT EXISTS 'DELIVERED' AFTER 'SHIPPED'"))
-        for statement in ORDER_COLUMNS:
+        for statement in ORDER_COLUMNS + USER_COLUMNS:
             conn.execute(text(statement))

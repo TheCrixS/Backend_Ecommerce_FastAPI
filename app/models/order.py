@@ -19,7 +19,13 @@ class Order(Base):
     total_amount = Column(Numeric(10, 2), nullable=False, default=0.00)
     status = Column(Enum(OrderStatus), default=OrderStatus.PENDING, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Copia de los datos de envío al momento del pedido: si el usuario cambia su
+    # perfil después, el pedido conserva a dónde se envió realmente
+    recipient_name = Column(String(100), nullable=True)
+    recipient_phone = Column(String(20), nullable=True)
     shipping_address = Column(String(255), nullable=True)
+    shipping_city = Column(String(80), nullable=True)
+    shipping_department = Column(String(80), nullable=True)
 
     # Datos del pago simulado (no se procesa dinero real)
     payment_method = Column(String(30), nullable=True)
