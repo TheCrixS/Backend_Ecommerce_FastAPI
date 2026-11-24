@@ -163,14 +163,25 @@ def pay_order(db: Session, order_id: int, user: User, payment: OrderPayment) -> 
     db.refresh(order)
     return order
 
+# Estados en los que el cliente todavía puede cancelar: el pedido aún no ha salido.
+# Si ya estaba pagado, el pago simulado se da por reembolsado.
+CUSTOMER_CANCELLABLE = {OrderStatus.PENDING, OrderStatus.PAID}
+
 def cancel_order(db: Session, order_id: int, user: User) -> Order:
-    order = get_order_for_user(db, order_id, user)
-    if order.user_id != user.id:
+    expire_stale_orders(db)
+    # Se bloquea la fila para que dos cancelaciones simultáneas no devuelvan el stock dos veces
+    order = (
+        db.query(Order)
+        .filter(Order.id == order_id, Order.user_id == user.id)
+        .with_for_update()
+        .first()
+    )
+    if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Orden no encontrada.")
-    if order.status != OrderStatus.PENDING:
+    if order.status not in CUSTOMER_CANCELLABLE:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Solo puedes cancelar órdenes que aún no se han pagado."
+            detail="Solo puedes cancelar pedidos que todavía no se han enviado."
         )
 
     _restore_stock(order)
@@ -180,7 +191,7 @@ def cancel_order(db: Session, order_id: int, user: User) -> Order:
     return order
 
 def update_order_status(db: Session, order_id: int, status_data: OrderStatusUpdate) -> Order:
-    order = db.query(Order).filter(Order.id == order_id).first()
+    order = db.query(Order).filter(Order.id == order_id).with_for_update().first()
     if not order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
